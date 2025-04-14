@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js GLB 뷰어 - 다중 모델</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="info">
+        <h3>GLB 모델 뷰어 - 다중 모델</h3>
+        <input type="file" id="fileInput" accept=".glb">
+        <button id="clearButton">모든 모델 삭제</button>
+        <div>
+            <label>
+                <input type="checkbox" id="collisionToggle" checked> 충돌 감지 활성화
+            </label>
+        </div>
+        
+        <!-- 그리드 설정 영역 -->
+        <div class="grid-settings">
+            <h4>그리드 설정</h4>
+            <div class="grid-options">
+                <div>
+                    <label for="mapResolution">배율 (m/px):</label>
+                    <input type="number" id="mapResolution" value="0.05" min="0.001" max="1" step="0.001">
+                    <span class="setting-info">(1픽셀 = 5cm)</span>
+                </div>
+                <div>
+                    <label for="gridCellWidth">셀 가로 크기 (m):</label>
+                    <input type="number" id="gridCellWidth" value="1.0" min="0.1" step="0.1">
+                </div>
+                <div>
+                    <label for="gridCellDepth">셀 세로 크기 (m):</label>
+                    <input type="number" id="gridCellDepth" value="1.0" min="0.1" step="0.1">
+                </div>
+                <div>
+                    <label for="gridWidthCount">가로 셀 수:</label>
+                    <input type="number" id="gridWidthCount" value="10" min="1" step="1">
+                </div>
+                <div>
+                    <label for="gridDepthCount">세로 셀 수:</label>
+                    <input type="number" id="gridDepthCount" value="10" min="1" step="1">
+                </div>
+                
+                <!-- 픽셀 정보 표시 영역 추가 -->
+                <div class="grid-pixel-info">
+                    <div id="gridPixelInfo">
+                        셀 크기: 20px × 20px | 전체 맵: 200px × 200px
+                    </div>
+                </div>
+                
+                <button id="updateGridButton">그리드 업데이트</button>
+            </div>
+        </div>
+
+        <!-- 거리 계산 기준점 표시 컨트롤 추가 -->
+        <div class="reference-point-controls">
+            <label>
+                <input type="checkbox" id="referencePointToggle"> 거리 계산 기준점 표시
+            </label>
+        </div>
+
+        <!-- 거리재기 모드 컨트롤 추가 -->
+        <div class="distance-measure-controls">
+            <label>
+                <input type="checkbox" id="distanceMeasureToggle"> 거리재기 모드
+            </label>
+            <div id="measureInfo" class="measure-info" style="display: none;">
+                <span id="measureInfoText">첫번째 지점을 선택하세요</span>
+                <div class="measure-buttons">
+                    <button id="cancelMeasureButton" class="small-button">취소</button>
+                    <button id="clearAllMeasureButton" class="small-button clear-button">전체 삭제</button>
+                </div>
+            </div>
+        </div>
+    </div>
+        <!-- 측정 결과 표시 영역 -->
+        <div id="measureResultContainer" class="measure-result-container" style="display: none;">
+            <div class="measure-result-header">거리 측정 결과</div>
+            <div id="measureResult" class="measure-result"></div>
+        </div>
+
+
+    <div id="loading" class="loading" style="display: none;">모델 로딩 중...</div>
+    <div id="modelsPanel" class="models-panel">
+        <h3>로드된 모델</h3>
+        <div id="modelsList"></div>
+    </div>
+    <div id="collisionMessage">충돌 발생!</div>
+    <div id="gridBoundaryMessage" style="display: none;">그리드 경계를 벗어날 수 없습니다!</div>
+    <div id="tooltip" class="tooltip"></div>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.161.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
+        }
+      }
+    </script>
+    <script type="module" src="main.js"></script>
+</body>
+</html>

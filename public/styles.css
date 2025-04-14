@@ -1,0 +1,566 @@
+body { 
+    margin: 0; 
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+}
+
+canvas { 
+    display: block; 
+}
+
+.selected {
+    background-color: rgba(255, 255, 0, 0.3) !important;
+    border: 1px solid yellow;
+}
+
+.info {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 10px;
+    max-width: 350px;
+    border-radius: 5px;
+    z-index: 10;
+}
+
+.loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    z-index: 100;
+}
+
+.models-panel {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 10px;
+    max-width: 300px;
+    max-height: 80vh;
+    overflow-y: auto;
+    border-radius: 5px;
+    z-index: 10;
+}
+
+.model-item {
+    margin-bottom: 10px;
+    padding: 8px;
+    background: rgba(50,50,50,0.5);
+    border-radius: 4px;
+}
+
+.model-controls {
+    margin-top: 5px;
+}
+
+button, select, input {
+    margin: 5px 5px 5px 0;
+    padding: 5px 10px;
+}
+
+.position-controls {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 5px;
+}
+
+.position-controls input {
+    width: 60px;
+    margin-right: 5px;
+}
+
+.position-controls label {
+    margin-right: 5px;
+    display: flex;
+    align-items: center;
+}
+
+.readonly-input {
+    background-color: #444;
+    color: #ccc;
+    cursor: not-allowed;
+}
+
+.collision {
+    outline: 2px solid red !important;
+    background-color: rgba(255, 0, 0, 0.2) !important;
+}
+
+#collisionMessage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 0, 0, 0.7);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    display: none;
+    z-index: 50;
+}
+
+#gridBoundaryMessage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 165, 0, 0.7);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    z-index: 50;
+}
+
+.tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    pointer-events: none;
+    z-index: 100;
+    display: none;
+}
+
+.rotation-controls {
+    display: flex;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.rotation-controls button {
+    flex: 1;
+    margin-right: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    min-width: 60px;
+}
+
+.scale-controls {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    align-items: center;
+}
+
+.scale-controls label {
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+}
+
+.scale-controls input {
+    width: 50px;
+    margin-left: 5px;
+}
+
+.scale-controls button {
+    margin-right: 5px;
+    font-size: 12px;
+    padding: 4px 8px;
+}
+
+.fine-scale-controls {
+    display: flex;
+    margin-top: 5px;
+    width: 100%;
+}
+
+.fine-scale-controls button {
+    flex: 1;
+    font-size: 11px;
+    padding: 2px 4px;
+    margin-right: 5px;
+    background-color: #555;
+}
+
+/* 거리 정보 스타일 */
+.distance-info {
+    margin-top: 8px;
+    padding: 5px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.distance-label {
+    font-weight: bold;
+    color: #aaa;
+}
+
+.distance-value {
+    font-weight: bold;
+    color: #fff;
+}
+
+/* 그리드 설정 스타일 */
+.grid-settings {
+    margin-top: 10px;
+    padding: 5px;
+    background-color: rgba(50, 50, 50, 0.5);
+    border-radius: 5px;
+}
+
+.grid-settings h4 {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.grid-options {
+    display: flex;
+    flex-direction: column;
+}
+
+.grid-options div {
+    margin: 3px 0;
+    display: flex;
+    align-items: center;
+}
+
+.grid-options label {
+    width: 150px;
+    font-size: 12px;
+}
+
+.grid-options input {
+    width: 60px;
+}
+
+#updateGridButton {
+    margin-top: 8px;
+    background-color: #2a7acc;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+#updateGridButton:hover {
+    background-color: #1c5c9c;
+}
+
+/* uiTooltipController.js에서 이동된 스타일 */
+.message {
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    z-index: 100;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.success-message {
+    background-color: rgba(40, 167, 69, 0.8);
+    color: white;
+}
+
+.error-message {
+    background-color: rgba(220, 53, 69, 0.8);
+    color: white;
+}
+
+.detail-tooltip {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    max-width: 300px;
+    z-index: 101;
+    pointer-events: none;
+}
+
+.detail-tooltip-title {
+    font-weight: bold;
+    margin-bottom: 5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    padding-bottom: 3px;
+}
+
+.detail-tooltip-content {
+    font-size: 12px;
+}
+
+/* 그리드 텍스트 라벨 스타일 */
+.grid-text-label {
+    font-family: Arial, sans-serif;
+    font-weight: bold;
+    font-size: 20px;
+    color: #ffffff;
+    text-align: center;
+}
+
+/* 그리드 설정 관련 추가 스타일 */
+.setting-info {
+    color: #aaa;
+    font-size: 11px;
+    margin-left: 8px;
+}
+
+.grid-options div {
+    margin: 3px 0;
+    display: flex;
+    align-items: center;
+}
+
+.grid-options label {
+    width: 150px;
+    font-size: 12px;
+}
+
+.grid-options input {
+    width: 60px;
+}
+
+.reference-point-controls {
+    margin-top: 10px;
+    padding: 5px;
+    background-color: rgba(60, 60, 60, 0.5);
+    border-radius: 4px;
+}
+
+.reference-point-controls label {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+}
+
+.reference-point-controls input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+/* 픽셀 정보 표시 영역 스타일 - 높이 확장 */
+.grid-pixel-info {
+    margin: 10px 0;
+    padding: 8px 12px;
+    background-color: rgba(80, 80, 80, 0.5);
+    border-radius: 4px;
+    border-left: 3px solid #4a8fff;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.grid-pixel-info #gridPixelInfo {
+    font-family: monospace;
+    color: #d0d0d0;
+    white-space: normal;
+}
+
+/* 셀 정보와 맵 정보 스타일 구분 */
+#gridPixelInfo span.cell-info {
+    color: #a0e0ff;
+}
+
+#gridPixelInfo span.map-info {
+    color: #d0d0d0;
+}
+
+/* 경고 스타일 */
+.warning {
+    color: #ffcc00 !important;
+    border-color: #ffcc00 !important;
+}
+
+#gridPixelInfo.warning {
+    animation: pulse 2s infinite;
+}
+
+#gridPixelInfo.warning span.map-info {
+    color: #ffcc00 !important;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+/* 거리재기 컨트롤 스타일 */
+.distance-measure-controls {
+    margin-top: 10px;
+    padding: 5px;
+    background-color: rgba(60, 60, 120, 0.5);
+    border-radius: 4px;
+}
+
+.distance-measure-controls label {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+}
+
+.distance-measure-controls input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.measure-info {
+    margin-top: 5px;
+    padding: 5px;
+    background-color: rgba(80, 80, 150, 0.6);
+    border-radius: 3px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.measure-info span {
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.small-button {
+    padding: 2px 8px;
+    font-size: 11px;
+    background-color: #ff5555;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.small-button:hover {
+    background-color: #ff3333;
+}
+
+/* 측정 결과 컨테이너 */
+.measure-result-container {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    min-width: 250px;
+    z-index: 100;
+}
+
+.measure-result-header {
+    font-weight: bold;
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.measure-result {
+    font-family: monospace;
+    font-size: 14px;
+}
+
+/* 측정 점 스타일 (참고용) */
+.measure-point {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: yellow;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    pointer-events: none;
+}
+
+/* 측정 결과 컨테이너 업데이트 */
+.measure-result-container {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    min-width: 250px;
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 100;
+}
+
+.measure-result-header {
+    font-weight: bold;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    text-align: center;
+}
+
+.measure-result {
+    font-family: monospace;
+    font-size: 14px;
+}
+
+.measure-item {
+    margin-bottom: 15px;
+    padding: 8px;
+    background-color: rgba(50, 50, 80, 0.5);
+    border-radius: 4px;
+    border-left: 3px solid #4a8fff;
+}
+
+.measure-header {
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #4a8fff;
+}
+
+.measure-points {
+    margin-top: 5px;
+    font-size: 12px;
+    color: #aaaaaa;
+}
+
+.measure-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.small-button {
+    padding: 2px 8px;
+    font-size: 11px;
+    background-color: #ff5555;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.small-button:hover {
+    background-color: #ff3333;
+}
+
+.clear-button {
+    background-color: #777777;
+}
+
+.clear-button:hover {
+    background-color: #555555;
+}
+
+.measure-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(255, 100, 0, 0.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    z-index: 1000;
+    transition: opacity 0.3s ease;
+}
