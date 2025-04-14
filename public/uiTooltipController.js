@@ -21,7 +21,8 @@ export class UITooltipController {
             gridBoundary: null,
             collision: null,
             success: null,
-            error: null
+            error: null,
+            info: null
         };
         
         // 동적 메시지 요소 생성
@@ -46,6 +47,13 @@ export class UITooltipController {
         this.errorMessage.className = 'message error-message';
         this.errorMessage.style.display = 'none';
         document.body.appendChild(this.errorMessage);
+        
+        // 정보 메시지 요소
+        this.infoMessage = document.createElement('div');
+        this.infoMessage.id = 'infoMessage';
+        this.infoMessage.className = 'message info-message';
+        this.infoMessage.style.display = 'none';
+        document.body.appendChild(this.infoMessage);
         
         // 상세 정보 툴팁 요소 생성
         this.detailTooltip = document.createElement('div');
@@ -182,6 +190,37 @@ export class UITooltipController {
         }, duration);
     }
     
+    // 정보 메시지 표시
+    showInfoMessage(message, duration = 3000) {
+        if (!this.infoMessage) {
+            this.infoMessage = document.createElement('div');
+            this.infoMessage.id = 'infoMessage';
+            this.infoMessage.className = 'message info-message';
+            this.infoMessage.style.display = 'none';
+            document.body.appendChild(this.infoMessage);
+            
+            // 메시지 타임아웃 추가
+            this.messageTimeouts.info = null;
+        }
+        
+        this.infoMessage.textContent = message;
+        this.infoMessage.style.display = 'block';
+        
+        // 기존 타임아웃 취소
+        if (this.messageTimeouts.info) {
+            clearTimeout(this.messageTimeouts.info);
+        }
+        
+        // 지정된 시간 후 메시지 숨기기
+        this.messageTimeouts.info = setTimeout(() => {
+            this.infoMessage.style.opacity = '0';
+            setTimeout(() => {
+                this.infoMessage.style.display = 'none';
+                this.infoMessage.style.opacity = '1';
+            }, 300);
+        }, duration);
+    }
+    
     // 모든 메시지 숨기기
     hideAllMessages() {
         // 모든 타임아웃 취소
@@ -194,6 +233,7 @@ export class UITooltipController {
         if (this.collisionMessage) this.collisionMessage.style.display = 'none';
         if (this.successMessage) this.successMessage.style.display = 'none';
         if (this.errorMessage) this.errorMessage.style.display = 'none';
+        if (this.infoMessage) this.infoMessage.style.display = 'none';
     }
     
     // 상세 정보 툴팁 표시 (마우스 오버 시 추가 정보)

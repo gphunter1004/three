@@ -3,6 +3,7 @@ import { UIDragController } from './uiDragController.js';
 import { UIKeyboardController } from './uiKeyboardController.js';
 import { UIDistanceController } from './uiDistanceController.js';
 import { UIMeasureController } from './uiMeasureController.js';
+import { UIFloorPlanController } from './UIFloorPlanController.js'; // 새 컨트롤러 import
 
 export class UIEventController {
     constructor(uiController) {
@@ -21,15 +22,23 @@ export class UIEventController {
         
         // 모드 상태
         this.isMeasuringMode = false;
+        this.isFloorMoveMode = false;
         
         // 서브 컨트롤러 초기화
         this.dragController = new UIDragController(this);
         this.keyboardController = new UIKeyboardController(this);
         this.distanceController = new UIDistanceController(this);
         this.measureController = new UIMeasureController(this);
+        this.floorPlanController = new UIFloorPlanController(this); // 새 컨트롤러 추가
         
         // 이벤트 설정
         this.setupEventListeners();
+    }
+    
+    // 바닥 계획 시스템 설정
+    setFloorPlanSystem(floorPlanSystem) {
+        this.floorPlanSystem = floorPlanSystem;
+        this.floorPlanController.setFloorPlanSystem(floorPlanSystem);
     }
     
     // 이벤트 리스너 설정
@@ -50,6 +59,20 @@ export class UIEventController {
                 this.distanceController.handleReferencePointToggle.bind(this.distanceController));
         }
         
+        // 바닥 이동 모드 토글 이벤트 처리
+        const floorMoveToggle = document.getElementById('floorMoveToggle');
+        if (floorMoveToggle) {
+            floorMoveToggle.addEventListener('change', (event) => {
+                this.isFloorMoveMode = event.target.checked;
+                // 바닥 이동 모드가 활성화되면 측정 모드는 비활성화
+                if (this.isFloorMoveMode && this.isMeasuringMode) {
+                    const measureToggle = document.getElementById('distanceMeasureToggle');
+                    if (measureToggle) measureToggle.checked = false;
+                    this.setMeasuringMode(false);
+                }
+            });
+        }
+        
         // 드래그 컨트롤러에 이벤트 위임
         this.dragController.setupEventListeners();
         
@@ -58,6 +81,14 @@ export class UIEventController {
         
         // 거리 측정 컨트롤러에 이벤트 위임
         this.measureController.setupEventListeners();
+        
+        // 바닥 도형 컨트롤러에 이벤트 위임
+        this.floorPlanController.setupEventListeners();
+        
+        // 마우스 이벤트 추가
+        this.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this));
+        this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this));
+        this.canvas.addEventListener('mouseup', this.handleMouseUp.bind(this));
     }
     
     // 오른쪽 클릭 처리 (컨텍스트 메뉴)
@@ -72,21 +103,63 @@ export class UIEventController {
         return false;
     }
     
+    // 마우스 다운 처리 (우선순위에 따라 처리)
+    handleMouseDown(event) {
+        // 왼쪽 버튼만 처리
+        if (event.button !== 0) return;
+        
+        // 1. 바닥 이동 모드가 활성화된 경우
+        if (this.isFloorMoveMode) {
+            const handled = this.floorPlanController.handleMouseDown(event);
+            if (handled) return;
+        }
+        
+        // 2. 드래그 컨트롤러에 위임
+        this.dragController.handleMouseDown(event);
+    }
+    
+    // 마우스 이동 처리
+    handleMouseMove(event) {
+        // 1. 바닥 이동 모드가 활성화된 경우
+        if (this.isFloorMoveMode) {
+            const handled = this.floorPlanController.handleMouseMove(event);
+            if (handled) return;
+        }
+        
+        // 2. 드래그 컨트롤러에 위임
+        this.dragController.handleMouseMove(event);
+    }
+    
+    // 마우스 업 처리
+    handleMouseUp(event) {
+        // 1. 바닥 이동 모드가 활성화된 경우
+        if (this.isFloorMoveMode) {
+            const handled = this.floorPlanController.handleMouseUp(event);
+            if (handled) return;
+        }
+        
+        // 2. 드래그 컨트롤러에 위임
+        this.dragController.handleMouseUp(event);
+    }
+    
     // 캔버스 클릭 처리 - 우선순위에 따라 처리
     handleCanvasClick(event) {
         // 왼쪽 클릭만 처리 (오른쪽 클릭은 contextmenu 이벤트로 처리)
         if (event.button !== 0) return;
         
-        // 1. 측정 모드가 활성화된 경우, 측정 컨트롤러에 이벤트 위임
+        // 1. 바닥 이동 모드가 활성화된 경우 클릭 이벤트는 바닥 이동에 사용
+        if (this.isFloorMoveMode) return;
+        
+        // 2. 측정 모드가 활성화된 경우, 측정 컨트롤러에 이벤트 위임
         if (this.isMeasuringMode) {
             const handled = this.measureController.handleCanvasClick(event);
             if (handled) return; // 이벤트가 처리되었으면 종료
         }
         
-        // 2. 드래그 중이면 클릭 이벤트 무시
+        // 3. 드래그 중이면 클릭 이벤트 무시
         if (this.dragController.isDragging) return;
 
-        // 3. 그 외의 경우 - 기본 모델 선택 처리
+        // 4. 그 외의 경우 - 기본 모델 선택 처리
         // 마우스 좌표 정규화
         this.uiController.updateMouseCoordinates(event);
 
@@ -151,11 +224,21 @@ export class UIEventController {
         
         // 측정 모드가 활성화되면 다른 컨트롤러들의 입력 처리를 일시적으로 비활성화할 수 있음
         if (active) {
-            // 예: 키보드 이동 비활성화
+            // 키보드 이동 비활성화
             this.keyboardController.keyboardMoveEnabled = false;
             
             // 드래그 컨트롤러에도 알림
             this.dragController.disableDragWhileMeasuring = true;
+            
+            // 바닥 이동 모드가 활성화되어 있으면 비활성화
+            if (this.isFloorMoveMode) {
+                const floorMoveToggle = document.getElementById('floorMoveToggle');
+                if (floorMoveToggle) floorMoveToggle.checked = false;
+                this.isFloorMoveMode = false;
+                if (this.floorPlanSystem) {
+                    this.floorPlanSystem.setMoveMode(false);
+                }
+            }
         } else {
             // 다시 활성화
             this.keyboardController.keyboardMoveEnabled = true;
@@ -170,5 +253,6 @@ export class UIEventController {
         this.keyboardController.update();
         this.distanceController.update();
         this.measureController.update();
+        this.floorPlanController.update();
     }
 }

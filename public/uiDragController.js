@@ -24,6 +24,9 @@ export class UIDragController {
         
         // 측정 모드 관련 변수
         this.disableDragWhileMeasuring = false;
+
+        // Floor
+        this.disableDragWhileMovingFloor = false;
     }
     
     // 이벤트 리스너 설정
@@ -43,8 +46,9 @@ export class UIDragController {
     
     // 마우스 다운 처리 (드래그 시작)
     handleMouseDown(event) {
-        // 측정 모드 중에는 드래그 비활성화
-        if (this.disableDragWhileMeasuring) return;
+
+        // 측정 모드나 바닥 이동 모드 중에는 드래그 비활성화
+        if (this.disableDragWhileMeasuring || this.disableDragWhileMovingFloor) return;
         
         // 마우스 좌표 정규화
         this.uiController.updateMouseCoordinates(event);

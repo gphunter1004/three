@@ -4,6 +4,7 @@ import CollisionManager from './collision.js';
 import { ModelManager } from './modelManager.js';
 import { UIController } from './uiController.js';
 import { GridSystem } from './gridSystem.js';
+import { FloorPlanSystem } from './FloorPlanSystem.js';
 
 // 전역 변수
 let scene, camera, renderer, controls;
@@ -13,6 +14,7 @@ let collisionManager;
 let modelManager;
 let uiController;
 let gridSystem;
+let floorPlanSystem;
 
 // 초기화
 function init() {
@@ -109,6 +111,12 @@ function init() {
         gridSystem // 그리드 시스템 참조 전달
     );
 
+    // 바닥 도형 시스템 초기화
+    floorPlanSystem = new FloorPlanSystem(scene, gridSystem);
+    
+    // 이벤트 컨트롤러에 바닥 도형 시스템 설정
+    uiController.eventController.setFloorPlanSystem(floorPlanSystem);
+
     // 창 리사이즈 이벤트
     window.addEventListener('resize', onWindowResize);
     
@@ -119,6 +127,7 @@ function init() {
     debugGridSystem();
 
     console.log("초기화 완료");
+    console.log("바닥 도형 시스템 초기화 완료");
 }
 
 // 원점(중심점) 표시기 생성
@@ -236,6 +245,11 @@ function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+    
+    // 크기 변경 시 바닥 도형의 치수 화살표 업데이트
+    if (floorPlanSystem) {
+        floorPlanSystem.updateDimensionArrows();
+    }
 }
 
 // 애니메이션 루프
@@ -252,6 +266,11 @@ function animate() {
 
     // UI 컨트롤러 업데이트
     uiController.update();
+    
+    // 바닥 도형 시스템 업데이트
+    if (floorPlanSystem) {
+        floorPlanSystem.update();
+    }
 
     // 렌더링 최적화
     optimizeRenderingForCurrentView();
